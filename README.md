@@ -147,3 +147,13 @@ Instructions for installation of ubuntu trust on razer blade
   because of a bug. While you work on it, you will need to install xfce or
   lxde
 * ```sudo mokutil --enable-verification``` to restore secure boot
+* The display does not recover from suspend. Add acpi_sleep=s3_bios to the kernel parameters.  
+```
+dhiman@amacrine:~$ grep -2 CMDLINE /etc/default/grub
+GRUB_TIMEOUT=1
+GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
+GRUB_CMDLINE_LINUX_DEFAULT="splash acpi_sleep=s3_bios"
+GRUB_CMDLINE_LINUX=""
+
+# Uncomment to enable BadRAM filtering, modify to suit your needs
+```
