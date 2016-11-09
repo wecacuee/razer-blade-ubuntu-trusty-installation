@@ -1,4 +1,4 @@
-# razer-blade-ubuntu-trusty-installation
+# Ubuntu 14.04 (trusty) installation on Razer blade 2016
 Instructions for installation of ubuntu trust on razer blade
 * Installing Ubuntu 14.04 alongside windows 10 on Razer blade 2016
 * Go to windows 10 disk management. Right click on the largest size volume and select "Shrink Volume". Shrink so that you have enough space for ubuntu
