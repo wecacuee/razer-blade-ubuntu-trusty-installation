@@ -21,7 +21,6 @@ Instructions for installation of ubuntu trust on razer blade
     sudo apt-get install nvidia-352 nvidia-367 nvidia-settings nvidia-modeprobe nvidia-prime
 ```
 * Install the intel drivers and mesa opengl
-
 ```
     sudo apt-get install xserver-xorg-video-intel-lts-xenial \
              libgl1-mesa-dri-lts-xenial \
@@ -33,27 +32,27 @@ Instructions for installation of ubuntu trust on razer blade
              mesa-utils \
              mesa-vdpau-drivers-lts-xenial
 ```
-* Remove or disable gpu-manager
+* Remove or disable gpu-manager. It is a [single script](http://bazaar.launchpad.net/~ubuntu-branches/ubuntu/trusty/ubuntu-drivers-common/trusty/view/head:/share/hybrid/gpu-manager.c) that tries to be oversmart. If it works for you then great, it didn't wor for me.
 ```
     sudo apt-get remove --purge ubuntu-driver-commons
 ```
-* Set update-alternatives for x86_64-linux-gnu_gl_conf
+* Set update-alternatives for x86_64-linux-gnu_gl_conf. Point the `ldd /usr/bin/glxgears` dependencies to the right ld.so.conf. Last two lines are for pointing LibraryPath in `/etc/bumblebee/bumblebee.conf` to the right location.
 ```
-    sudo update-alternatives --set x86_64-linux-gnu_gl_conf /usr/lib/nvidia-361-prime/ld.so.conf 
-    sudo update-alternatives --set i386-linux-gnu_gl_conf /usr/lib/nvidia-361-prime/ld.so.conf 
-    sudo update-alternatives --set x86_64-linux-gnu_egl_conf /usr/lib/nvidia-361-prime/alt_ld.so.conf 
-    sudo update-alternatives --set i386-linux-gnu_egl_conf /usr/lib/nvidia-361-prime/alt_ld.so.conf 
+    sudo update-alternatives --set x86_64-linux-gnu_gl_conf /usr/lib/nvidia-367-prime/ld.so.conf 
+    sudo update-alternatives --set i386-linux-gnu_gl_conf /usr/lib/nvidia-367-prime/ld.so.conf 
+    sudo update-alternatives --set x86_64-linux-gnu_egl_conf /usr/lib/nvidia-367-prime/alt_ld.so.conf 
+    sudo update-alternatives --set i386-linux-gnu_egl_conf /usr/lib/nvidia-367-prime/alt_ld.so.conf 
     sudo update-alternatives --install /usr/lib/nvidia-current nvidia-current /usr/lib/nvidia-367 367
     sudo update-alternatives --install /usr/lib32/nvidia-current nvidia-current32 /usr/lib32/nvidia-367 367
 ```
-* Install upgraded kernel
+* Install upgraded kernel. I think kernel 4.4 should also work. Not sure if this is needed. [A blog suggested it](https://xipherzero.com/ubuntu-16-04-razer-blade-2016/). More kernel options [here](http://kernel.ubuntu.com/~kernel-ppa/mainline/)
 ```
     wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.8.6/linux-headers-4.8.6-040806_4.8.6-040806.201610310831_all.deb
     wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.8.6/linux-headers-4.8.6-040806-generic_4.8.6-040806.201610310831_amd64.deb
     wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.8.6/linux-image-4.8.6-040806-generic_4.8.6-040806.201610310831_amd64.deb
     sudo dpkg -i *.deb
 ```
-* Fix bumblebee configuration and bumblebee modprobe configuration to look like this
+* Fix bumblebee configuration and bumblebee modprobe configuration to look like this.
 ```
     dhiman@amacrine:~$ grep -i nvidia /etc/bumblebee/bumblebee.conf 
     # auto-detection is performed. The available drivers are nvidia and nouveau
@@ -69,6 +68,7 @@ Instructions for installation of ubuntu trust on razer blade
     XorgModulePath=/usr/lib/nvidia-current/xorg,/usr/lib/xorg/modules
     XorgConfFile=/etc/bumblebee/xorg.conf.nvidia
 ```
+* Take care of the bumblebee bug when it fails to remove nvidia modules. [Bug](https://github.com/Bumblebee-Project/Bumblebee/issues/719)
 ```
     dhiman@amacrine:~$ tail -n 4 /etc/modprobe.d/bumblebee.conf 
     blacklist nvidia-experimental-355
@@ -76,12 +76,12 @@ Instructions for installation of ubuntu trust on razer blade
     remove nvidia rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia
     alias nvidia-modeset nvidia_367_modeset
 ```
-* Add module configuration to load bbswitch with off state
+* Add module configuration to load bbswitch with off state. You can list options by `modinfo bbswitch`.
 ```
     dhiman@amacrine:~$ cat /etc/modprobe.d/bbswitch.conf 
     options bbswitch load_state=0
 ```
-* Optionally add i915 options
+* Optionally add i915 options. You can list the module options by `modinfo i915`. More details [here](https://wiki.archlinux.org/index.php/Intel_Graphics)
 ```
     dhiman@amacrine:~$ cat /etc/modprobe.d/i915.conf 
     options i915 enable_rc6=1
@@ -142,12 +142,11 @@ Instructions for installation of ubuntu trust on razer blade
         libXau.so.6 => /usr/lib/x86_64-linux-gnu/libXau.so.6 (0x00007fda0bda6000)
         libXdmcp.so.6 => /usr/lib/x86_64-linux-gnu/libXdmcp.so.6 (0x00007fda0bba0000)
 ```
-* After optirun exists the nvidia modules should be unloaded
+* After optirun exits the nvidia modules should be unloaded. `lsmod | grep nvidia` should not return anything.
 * If intel drivers 3D acceleration breaks then, then gnome-session won't load
-  because of a bug. While you work on it, you will need to install xfce or
-  lxde
+  because of a [bug](https://bugs.launchpad.net/ubuntu/+source/gnome-session/+bug/1251281). While you work on it, you will need to install xfce or lxde : `sudo apt-get install lubuntu-desktop`
 * ```sudo mokutil --enable-verification``` to restore secure boot
-* The display does not recover from suspend. Add acpi_sleep=s3_mode to the kernel parameters.  
+* The display does not recover from suspend. Add acpi_sleep=s3_mode to the kernel parameters. Detailed explanation [here](https://www.kernel.org/doc/Documentation/power/video.txt)
 ```
 dhiman@amacrine:~$ grep -2 CMDLINE /etc/default/grub
 GRUB_TIMEOUT=1
