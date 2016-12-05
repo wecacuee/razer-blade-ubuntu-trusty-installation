@@ -156,3 +156,11 @@ GRUB_CMDLINE_LINUX=""
 
 # Uncomment to enable BadRAM filtering, modify to suit your needs
 ```
+# Cuda deviceQuery issues
+* `optirun ./deviceQuery` leads to incompatible driver version error
+* Try finding the missing libraries by running
+
+```
+LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH find /usr/local/cuda-8.0 -name '*.so' -exec ldd \{} \; | grep 'not found'
+```
+* In my case `libcuda.so.1` was missing which comes with package `libcuda1-367`
