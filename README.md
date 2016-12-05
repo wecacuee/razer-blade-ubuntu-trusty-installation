@@ -18,7 +18,7 @@ Instructions for installation of ubuntu trust on razer blade
 * Install latest nvidia-drivers
 
 ```
-    sudo apt-get install nvidia-352 nvidia-367 nvidia-settings nvidia-modeprobe nvidia-prime
+    sudo apt-get install nvidia-352 nvidia-367 libcuda1-367 nvidia-settings nvidia-modeprobe nvidia-prime
 ```
 * Install the intel drivers and mesa opengl
 ```
