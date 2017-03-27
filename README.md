@@ -164,3 +164,13 @@ GRUB_CMDLINE_LINUX=""
 LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH find /usr/local/cuda-8.0 -name '*.so' -exec ldd \{} \; | grep 'not found'
 ```
 * In my case `libcuda.so.1` was missing which comes with package `libcuda1-367`
+
+
+# Updates breaks the bumblebee configuration
+* Symptom: gnome-session goes into a loop and throws you back to the login screen.
+* Attempt 1: Fix nvidia-367 -> nvidia-375 in all the files referred above. (Need to find a better solution)
+* Attempt 2: Reinstall cuda drivers
+```
+sudo apt-get remove --purge nvidia-*
+sudo apt-get install bumblebee-nvidia cuda-drivers
+```
