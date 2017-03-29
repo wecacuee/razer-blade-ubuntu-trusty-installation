@@ -18,7 +18,32 @@ Instructions for installation of ubuntu trust on razer blade
 * Install latest nvidia-drivers
 
 ```
-    sudo apt-get install nvidia-352 nvidia-367 libcuda1-367 nvidia-settings nvidia-modeprobe nvidia-prime
+    sudo sh -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64 /" > /etc/apt/sources.list.d/cuda.list'
+    sudo apt-get update
+    sudo apt-get install cuda-drivers
+```
+* Get the install driver number
+```
+dhiman@amacrine:~$ apt-cache depends cuda-drivers
+cuda-drivers
+  Depends: nvidia-375
+  Depends: nvidia-375-dev
+  Depends: libcuda1-375
+  Depends: nvidia-modprobe
+  Depends: nvidia-settings
+  Depends: nvidia-opencl-icd-375
+  Depends: <libopencl1>
+    ocl-icd-libopencl1
+    nvidia-libopencl1-304
+    nvidia-libopencl1-340
+    nvidia-libopencl1-343
+    nvidia-libopencl1-361
+    nvidia-libopencl1-375
+dhiman@amacrine:~$ 
+```
+The LATEST_NVIDIA_DRIVER is 375
+```
+export LATEST_NVIDIA_DRIVER=375
 ```
 * Install the intel drivers and mesa opengl
 ```
@@ -38,12 +63,11 @@ Instructions for installation of ubuntu trust on razer blade
 ```
 * Set update-alternatives for x86_64-linux-gnu_gl_conf. Point the `ldd /usr/bin/glxgears` dependencies to the right ld.so.conf. Last two lines are for pointing LibraryPath in `/etc/bumblebee/bumblebee.conf` to the right location.
 ```
-    sudo update-alternatives --set x86_64-linux-gnu_gl_conf /usr/lib/nvidia-367-prime/ld.so.conf 
-    sudo update-alternatives --set i386-linux-gnu_gl_conf /usr/lib/nvidia-367-prime/ld.so.conf 
-    sudo update-alternatives --set x86_64-linux-gnu_egl_conf /usr/lib/nvidia-367-prime/alt_ld.so.conf 
-    sudo update-alternatives --set i386-linux-gnu_egl_conf /usr/lib/nvidia-367-prime/alt_ld.so.conf 
-    sudo update-alternatives --install /usr/lib/nvidia-current nvidia-current /usr/lib/nvidia-367 367
-    sudo update-alternatives --install /usr/lib32/nvidia-current nvidia-current32 /usr/lib32/nvidia-367 367
+    sudo update-alternatives --set x86_64-linux-gnu_gl_conf /usr/lib/x86_64-linux-gnu/mesa/ld.so.conf
+    sudo update-alternatives --set i386-linux-gnu_gl_conf /usr/lib/i386-linux-gnu/mesa/ld.so.conf
+    sudo update-alternatives --set x86_64-linux-gnu_egl_conf /usr/lib/x86_64-linux-gnu/mesa-egl/ld.so.conf 
+    sudo update-alternatives --install /usr/lib/nvidia-current nvidia-current /usr/lib/nvidia-$LATEST_NVIDIA_DRIVER $LATEST_NVIDIA_DRIVER
+    sudo update-alternatives --install /usr/lib32/nvidia-current nvidia-current32 /usr/lib32/nvidia-$LATEST_NVIDIA_DRIVER $LATEST_NVIDIA_DRIVER
 ```
 * Install upgraded kernel. I think kernel 4.4 should also work. Not sure if this is needed. [A blog suggested it](https://xipherzero.com/ubuntu-16-04-razer-blade-2016/). More kernel options [here](http://kernel.ubuntu.com/~kernel-ppa/mainline/)
 ```
@@ -61,7 +85,7 @@ Instructions for installation of ubuntu trust on razer blade
     # PMMethod: method to use for saving power by disabling the nvidia card, valid
     ## Section with nvidia driver specific options, only parsed if Driver=nvidia
     [driver-nvidia]
-    KernelDriver=nvidia_367
+    KernelDriver=nvidia
     # colon-separated path to the nvidia libraries
     LibraryPath=/usr/lib/nvidia-current:/usr/lib32/nvidia-current
     # comma-separated path of the directory containing nvidia_drv.so and the
@@ -73,8 +97,8 @@ Instructions for installation of ubuntu trust on razer blade
     dhiman@amacrine:~$ tail -n 4 /etc/modprobe.d/bumblebee.conf 
     blacklist nvidia-experimental-355
     # Workaround to make sure nvidia-uvm is removed as well
-    remove nvidia rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia
-    alias nvidia-modeset nvidia_367_modeset
+    remove nvidia_$LATEST_NVIDIA_DRIVER rmmod nvidia_uvm nvidia_drm nvidia_modeset nvidia
+    alias nvidia nvidia_$LATEST_NVIDIA_DRIVER
 ```
 * Add module configuration to load bbswitch with off state. You can list options by `modinfo bbswitch`.
 ```
@@ -173,4 +197,41 @@ LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH find /usr/local/cuda-8.0 
 ```
 sudo apt-get remove --purge nvidia-*
 sudo apt-get install bumblebee-nvidia cuda-drivers
+```
+* Attempt 3: Reinstall libgl1-mesa-dri-lts-xenial
+```
+sudo aptitude install libgl1-mesa-dri-lts-xenial
+```
+* Attempt 4: Fix update-alternatives to mesa libGL.so
+```
+sudo update-alternatives  --set x86_64-linux-gnu_gl_conf /usr/lib/x86_64-linux-gnu/mesa/ld.so.conf
+sudo update-alternatives  --set x86_64-linux-gnu_egl_conf /usr/lib/x86_64-linux-gnu/mesa/ld.so.conf
+sudo update-alternatives --install /usr/lib/nvidia-current nvidia-current /usr/lib/nvidia-375 375
+sudo update-alternatives --install /usr/lib32/nvidia-current nvidia-current32 /usr/lib32/nvidia-375 375
+sudo update-alternatives --install /usr/lib/nvidia-current-prime nvidia-current-prime /usr/lib/nvidia-375-prime 375
+```
+
+* Fix `/etc/bumblebee/bumblebee.conf` and `/etc/modprobe.d/bumbelbee.conf`
+```
+dhiman@amacrine:~$ grep nvidia /etc/bumblebee/bumblebee.conf 
+# auto-detection is performed. The available drivers are nvidia and nouveau
+Driver=nvidia
+# Should the program run under optirun even if Bumblebee server or nvidia card
+# PMMethod: method to use for saving power by disabling the nvidia card, valid
+## Section with nvidia driver specific options, only parsed if Driver=nvidia
+[driver-nvidia]
+KernelDriver=nvidia
+# colon-separated path to the nvidia libraries
+LibraryPath=/usr/lib/nvidia-current:/usr/lib32/nvidia-current
+# comma-separated path of the directory containing nvidia_drv.so and the
+XorgModulePath=/usr/lib/nvidia-current/xorg,/usr/lib/xorg/modules
+XorgConfFile=/etc/bumblebee/xorg.conf.nvidia
+```
+The following is basically trial and error . `optirun glxgears` should load modules properly on start and should unload properly on exit.
+```
+dhiman@amacrine:~$ tail -3 /etc/modprobe.d/bumblebee.conf 
+# Workaround to make sure nvidia-uvm is removed as well
+remove nvidia_375 rmmod nvidia_uvm nvidia_drm nvidia_modeset nvidia
+alias nvidia nvidia_375
+dhiman@amacrine:~$ 
 ```
