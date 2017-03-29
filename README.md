@@ -97,7 +97,7 @@ export LATEST_NVIDIA_DRIVER=375
     dhiman@amacrine:~$ tail -n 4 /etc/modprobe.d/bumblebee.conf 
     blacklist nvidia-experimental-355
     # Workaround to make sure nvidia-uvm is removed as well
-    remove nvidia_$LATEST_NVIDIA_DRIVER rmmod nvidia_uvm nvidia_drm nvidia_modeset nvidia
+    remove nvidia_* rmmod nvidia_uvm nvidia_drm nvidia_modeset nvidia
     alias nvidia nvidia_$LATEST_NVIDIA_DRIVER
 ```
 * Add module configuration to load bbswitch with off state. You can list options by `modinfo bbswitch`.
@@ -231,7 +231,7 @@ The following is basically trial and error . `optirun glxgears` should load modu
 ```
 dhiman@amacrine:~$ tail -3 /etc/modprobe.d/bumblebee.conf 
 # Workaround to make sure nvidia-uvm is removed as well
-remove nvidia_375 rmmod nvidia_uvm nvidia_drm nvidia_modeset nvidia
+remove nvidia_* rmmod nvidia_uvm nvidia_drm nvidia_modeset nvidia
 alias nvidia nvidia_375
 dhiman@amacrine:~$ 
 ```
