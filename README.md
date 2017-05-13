@@ -170,16 +170,16 @@ export LATEST_NVIDIA_DRIVER=375
 * If intel drivers 3D acceleration breaks then, then gnome-session won't load
   because of a [bug](https://bugs.launchpad.net/ubuntu/+source/gnome-session/+bug/1251281). While you work on it, you will need to install xfce or lxde : `sudo apt-get install lubuntu-desktop`
 * ```sudo mokutil --enable-verification``` to restore secure boot
-* The display does not recover from suspend. Add acpi_sleep=s3_mode to the kernel parameters. Detailed explanation [here](https://www.kernel.org/doc/Documentation/power/video.txt)
-```
-dhiman@amacrine:~$ grep -2 CMDLINE /etc/default/grub
-GRUB_TIMEOUT=1
-GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
-GRUB_CMDLINE_LINUX_DEFAULT="splash acpi_sleep=s3_bios"
-GRUB_CMDLINE_LINUX=""
+* The display does not recover from suspend. Add acpi_sleep=s3_mode to the kernel parameters. Detailed explanation [here](https://www.kernel.org/doc/Documentation/power/video.txt). (Update : with kernel 4.10, sleep works better without any kernel parameters.)
+    ```
+    dhiman@amacrine:~$ grep -2 CMDLINE /etc/default/grub
+    GRUB_TIMEOUT=1
+    GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
+    GRUB_CMDLINE_LINUX_DEFAULT="splash acpi_sleep=s3_bios"
+    GRUB_CMDLINE_LINUX=""
 
-# Uncomment to enable BadRAM filtering, modify to suit your needs
-```
+    # Uncomment to enable BadRAM filtering, modify to suit your needs
+    ```
 # Cuda deviceQuery issues
 * `optirun ./deviceQuery` leads to incompatible driver version error
 * Try finding the missing libraries by running
